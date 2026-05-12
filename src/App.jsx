@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   LayoutDashboard,
-  ListPlus,
+  History,
   Target,
   RotateCw,
   FileBarChart,
   Wallet,
   Settings as SettingsIcon,
+  Plus,
 } from "lucide-react";
 import { useLocalStorage, uid } from "./lib/storage";
 import { materializeRecurring } from "./lib/recurring";
@@ -20,11 +21,11 @@ import SettingsPanel from "./pages/Settings";
 import Toaster, { useToaster } from "./components/Toaster";
 
 const TABS = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "transactions", label: "Transactions", icon: ListPlus },
-  { id: "goals", label: "Goals", icon: Target },
-  { id: "recurring", label: "Recurring", icon: RotateCw },
-  { id: "report", label: "Report", icon: FileBarChart },
+  { id: "dashboard", label: "Overview", icon: LayoutDashboard },
+  { id: "transactions", label: "History", icon: History },
+  { id: "goals", label: "Savings", icon: Target },
+  { id: "recurring", label: "Automation", icon: RotateCw },
+  { id: "report", label: "Reports", icon: FileBarChart },
   { id: "settings", label: "Settings", icon: SettingsIcon },
 ];
 
@@ -45,9 +46,36 @@ export default function App() {
   const [settings, setSettings] = useLocalStorage("ft.settings", {
     currency: "USD",
     alertThreshold: 0.8,
+    darkMode: false,
   });
 
+  const [showAddModal, setShowAddModal] = useState(false);
+
   const toaster = useToaster();
+
+  useEffect(() => {
+    if (settings.darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [settings.darkMode]);
+
+  useEffect(() => {
+    function handleKey(e) {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") return;
+      if (e.key === "n" || e.key === "N") {
+        e.preventDefault();
+        setTab("transactions");
+        setShowAddModal(true);
+      }
+      if (e.key === "Escape") {
+        setShowAddModal(false);
+      }
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
 
   useEffect(() => {
     if (recurring.length === 0) return;
@@ -137,20 +165,23 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-20 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-brand-600 focus:text-white focus:rounded-lg">
+        Skip to main content
+      </a>
+      <header className="bg-white/80 backdrop-blur-md border-b border-stone-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-sm">
               <Wallet className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-lg leading-tight text-slate-900">Finly</h1>
-              <p className="text-[11px] text-slate-500 leading-tight">Personal Finance Tracker</p>
+              <h1 className="font-bold text-lg leading-tight text-stone-900">Finly</h1>
+              <p className="text-[11px] text-stone-500 leading-tight">Personal Finance Tracker</p>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-4 text-sm">
             <div className="text-right">
-              <div className="text-xs text-slate-500">Balance</div>
+              <div className="text-xs text-stone-500">Wallet</div>
               <div
                 className={`font-bold ${totals.balance >= 0 ? "text-emerald-600" : "text-rose-600"}`}
               >
@@ -176,7 +207,7 @@ export default function App() {
                   className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap transition border-b-2 ${
                     active
                       ? "text-brand-700 border-brand-600 bg-brand-50/60"
-                      : "text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100"
+                      : "text-stone-600 border-transparent hover:text-stone-900 hover:bg-stone-100"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -188,7 +219,7 @@ export default function App() {
         </nav>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+      <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 page-enter">
         {tab === "dashboard" && (
           <Dashboard
             transactions={transactions}
@@ -207,6 +238,8 @@ export default function App() {
             onUpdate={updateTransaction}
             onDelete={deleteTransaction}
             currency={settings.currency}
+            showAddModal={showAddModal}
+            onCloseAddModal={() => setShowAddModal(false)}
           />
         )}
         {tab === "goals" && (
@@ -235,7 +268,48 @@ export default function App() {
         )}
       </main>
 
-      <footer className="text-center text-xs text-slate-400 py-4">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-stone-200 z-30 pb-safe">
+        <div className="flex items-center justify-around h-16">
+          {[
+            { id: "dashboard", icon: LayoutDashboard, label: "Overview" },
+            { id: "transactions", icon: History, label: "History" },
+            { id: "add", icon: Plus, label: "Add", special: true },
+            { id: "goals", icon: Target, label: "Savings" },
+            { id: "settings", icon: SettingsIcon, label: "Settings" },
+          ].map((item) => {
+            const Icon = item.icon;
+            const active = tab === item.id;
+            if (item.id === "add") {
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => { setTab("transactions"); setShowAddModal(true); }}
+                  className="w-12 h-12 rounded-full bg-brand-600 text-white flex items-center justify-center shadow-lg -mt-4"
+                  aria-label="Add transaction"
+                >
+                  <Plus className="w-6 h-6" />
+                </button>
+              );
+            }
+            return (
+              <button
+                key={item.id}
+                onClick={() => setTab(item.id)}
+                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition focus:ring-2 focus:ring-brand-400 ${
+                  active ? "text-brand-600" : "text-stone-400"
+                }`}
+                aria-label={item.label}
+                aria-current={active ? "page" : undefined}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      <footer className="hidden md:block text-center text-xs text-stone-400 py-4 pb-16 md:pb-4">
         Finly • Data saved locally in your browser
       </footer>
 
