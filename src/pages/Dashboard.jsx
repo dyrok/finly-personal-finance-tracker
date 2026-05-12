@@ -86,6 +86,7 @@ export default function Dashboard({
           icon={TrendingUp}
           currency={currency}
           sub="this month"
+          delay={0}
         />
         <StatCard
           label="Expenses"
@@ -94,6 +95,7 @@ export default function Dashboard({
           icon={TrendingDown}
           currency={currency}
           sub="this month"
+          delay={50}
         />
         <StatCard
           label="Wallet"
@@ -102,6 +104,7 @@ export default function Dashboard({
           icon={Wallet}
           currency={currency}
           sub={balance >= 0 ? "Net positive" : "Net negative"}
+          delay={100}
         />
         <StatCard
           label="Savings Rate"
@@ -109,6 +112,7 @@ export default function Dashboard({
           tone="slate"
           icon={TargetIcon}
           sub="of income saved"
+          delay={150}
         />
       </div>
 
