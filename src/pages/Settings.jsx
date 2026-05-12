@@ -122,6 +122,26 @@ export default function SettingsPanel({
             </p>
           </div>
         </div>
+        <div className="flex items-center justify-between p-3 bg-stone-50 rounded-lg mt-4">
+          <div>
+            <div className="font-medium text-stone-800">Dark Mode</div>
+            <div className="text-xs text-stone-500">Switch to dark theme</div>
+          </div>
+          <button
+            role="switch"
+            aria-checked={settings.darkMode}
+            onClick={() => setSettings({ ...settings, darkMode: !settings.darkMode })}
+            className={`relative w-12 h-6 rounded-full transition-colors ${
+              settings.darkMode ? "bg-brand-600" : "bg-stone-300"
+            }`}
+          >
+            <span
+              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                settings.darkMode ? "translate-x-6" : ""
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       <div className="card">
