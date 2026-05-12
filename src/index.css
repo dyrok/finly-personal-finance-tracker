@@ -18,9 +18,10 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-.dark body {
+.dark {
   background: #0c0a09;
   color: #fafaf9;
+  min-height: 100vh;
 }
 
 * {
@@ -65,19 +66,6 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 200ms ease-out forwards;
-}
-
-.dark .card {
-  background: #1c1917;
-  border-color: #292524;
-}
-
-.dark .btn-ghost {
-  color: #a8a29e;
-}
-
-.dark .btn-ghost:hover {
-  background: #292524;
 }
 
 @layer components {
