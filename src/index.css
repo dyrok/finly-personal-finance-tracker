@@ -12,9 +12,15 @@ body,
 
 body {
   font-family: "Inter", system-ui, sans-serif;
-  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
-  color: #1f2937;
+  background: linear-gradient(135deg, #fafaf9 0%, #f5f3ff 100%);
+  color: #1c1917;
   min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.dark body {
+  background: #0c0a09;
+  color: #fafaf9;
 }
 
 * {
@@ -29,33 +35,117 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d6d3d1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #a8a29e;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #44403c;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #78716c;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(20px) translateY(-10px); opacity: 0; }
+  to { transform: translateX(0) translateY(0); opacity: 1; }
+}
+
+@keyframes progressFill {
+  from { width: 0%; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 200ms ease-out forwards;
+}
+
+.dark .card {
+  background: #1c1917;
+  border-color: #292524;
+}
+
+.dark .btn-ghost {
+  color: #a8a29e;
+}
+
+.dark .btn-ghost:hover {
+  background: #292524;
 }
 
 @layer components {
   .card {
-    @apply bg-white rounded-2xl shadow-sm border border-slate-200 p-5;
+    @apply bg-white rounded-xl shadow-sm border border-stone-100 p-5 transition-shadow duration-200;
+  }
+  .card:hover {
+    @apply shadow-md border-stone-200;
+  }
+  .dark .card {
+    @apply bg-stone-900 border-stone-800;
+  }
+  .dark .card:hover {
+    @apply border-stone-700;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-150;
+  }
+  .btn:active {
+    transform: scale(0.95);
   }
   .btn-primary {
     @apply btn bg-brand-600 text-white hover:bg-brand-700 shadow-sm;
   }
   .btn-ghost {
-    @apply btn text-slate-600 hover:bg-slate-100;
+    @apply btn text-stone-600 hover:bg-stone-100;
+  }
+  .dark .btn-ghost {
+    @apply text-stone-400 hover:bg-stone-800 hover:text-stone-200;
   }
   .btn-danger {
     @apply btn bg-rose-50 text-rose-600 hover:bg-rose-100;
   }
+  .dark .btn-danger {
+    @apply bg-rose-950 text-rose-400 hover:bg-rose-900;
+  }
   .input {
-    @apply w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition;
+    @apply w-full px-3 py-2 rounded-lg border border-stone-300 bg-white text-sm outline-none transition-all duration-150;
+  }
+  .input:focus {
+    @apply border-brand-400 ring-2 ring-brand-100;
+  }
+  .dark .input {
+    @apply bg-stone-800 border-stone-600 text-stone-100;
+  }
+  .dark .input:focus {
+    @apply border-brand-400 ring-brand-900;
   }
   .label {
-    @apply block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide;
+    @apply block text-xs font-semibold text-stone-600 mb-1.5 uppercase tracking-wide;
+  }
+  .dark .label {
+    @apply text-stone-400;
+  }
+  .page-enter {
+    animation: fadeIn 200ms ease-out forwards;
+  }
+  .toast-enter {
+    animation: slideInRight 300ms ease-out forwards;
+  }
+  .progress-animate {
+    animation: progressFill 600ms ease-out forwards;
+  }
+  .stat-card {
+    @apply rounded-2xl bg-gradient-to-br p-5 shadow-sm relative overflow-hidden;
+  }
+  .stat-card-enter {
+    opacity: 0;
+    animation: fadeIn 300ms ease-out forwards;
   }
 }
