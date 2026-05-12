@@ -1,15 +1,21 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Search, Trash2, Pencil, X, Check, Inbox, Download } from "lucide-react";
 import TransactionForm from "../components/TransactionForm";
 import EmptyState from "../components/EmptyState";
 import { formatMoney, prettyDate } from "../lib/format";
 import { categoryMeta, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "../lib/categories";
 
-export default function Transactions({ transactions, onAdd, onUpdate, onDelete, currency }) {
+export default function Transactions({ transactions, onAdd, onUpdate, onDelete, currency, showAddModal, onCloseAddModal }) {
   const [query, setQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterCat, setFilterCat] = useState("all");
   const [editing, setEditing] = useState(null);
+
+  useEffect(() => {
+    if (showAddModal) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [showAddModal]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -64,7 +70,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
         <div className="card">
           <div className="flex flex-col sm:flex-row gap-3 mb-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -96,8 +102,8 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
           </div>
 
           <div className="flex items-center justify-between text-sm mb-3 px-1">
-            <div className="text-slate-600">
-              <span className="font-semibold text-slate-900">{filtered.length}</span>{" "}
+            <div className="text-stone-600">
+              <span className="font-semibold text-stone-900">{filtered.length}</span>{" "}
               transaction{filtered.length !== 1 ? "s" : ""}
             </div>
             <div className="flex items-center gap-3">
@@ -129,7 +135,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
               }
             />
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-stone-100">
               {filtered.map((t) => {
                 const meta = categoryMeta(t.category, t.type);
                 if (editing === t.id) {
@@ -148,7 +154,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                 return (
                   <li
                     key={t.id}
-                    className="py-3 flex items-center gap-3 group hover:bg-slate-50 -mx-2 px-2 rounded-lg transition"
+                    className="py-3 flex items-center gap-3 group hover:bg-stone-50 -mx-2 px-2 rounded-lg transition border-l-2 border-transparent hover:border-l-brand-400 focus-within:border-l-brand-400"
                   >
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
@@ -157,10 +163,10 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                       {meta.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-slate-900 truncate">
+                      <div className="font-medium text-stone-900 truncate">
                         {t.note || t.category}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-stone-500">
                         {t.category} • {prettyDate(t.date)}
                         {t.recurringId ? (
                           <span className="ml-1 px-1.5 py-0.5 rounded bg-brand-50 text-brand-700 text-[10px] font-semibold">
@@ -171,7 +177,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                     </div>
                     <div
                       className={`font-semibold tabular-nums ${
-                        t.type === "income" ? "text-emerald-600" : "text-slate-900"
+                        t.type === "income" ? "text-emerald-600" : "text-stone-900"
                       }`}
                     >
                       {t.type === "income" ? "+" : "−"}
@@ -180,15 +186,17 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
                       <button
                         onClick={() => setEditing(t.id)}
-                        className="p-1.5 rounded-md hover:bg-slate-200 text-slate-600"
+                        className="p-1.5 rounded-md hover:bg-stone-200 text-stone-600 focus:ring-2 focus:ring-brand-400 focus:outline-none"
                         title="Edit"
+                        aria-label="Edit transaction"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onDelete(t.id)}
-                        className="p-1.5 rounded-md hover:bg-rose-100 text-rose-600"
+                        className="p-1.5 rounded-md hover:bg-rose-100 text-rose-600 focus:ring-2 focus:ring-brand-400 focus:outline-none"
                         title="Delete"
+                        aria-label="Delete transaction"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
