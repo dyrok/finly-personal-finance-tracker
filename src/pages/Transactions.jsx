@@ -5,6 +5,28 @@ import EmptyState from "../components/EmptyState";
 import { formatMoney, prettyDate } from "../lib/format";
 import { categoryMeta, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "../lib/categories";
 
+function groupByDate(txs) {
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const thisWeekStart = new Date(Date.now() - new Date().getDay() * 86400000).toISOString().slice(0, 10);
+
+  const groups = { today: [], yesterday: [], thisWeek: [], earlier: [] };
+  for (const t of txs) {
+    if (t.date === today) groups.today.push(t);
+    else if (t.date === yesterday) groups.yesterday.push(t);
+    else if (t.date >= thisWeekStart) groups.thisWeek.push(t);
+    else groups.earlier.push(t);
+  }
+  return Object.entries(groups).filter(([, arr]) => arr.length > 0);
+}
+
+const dateLabels = {
+  today: "Today",
+  yesterday: "Yesterday",
+  thisWeek: "This Week",
+  earlier: "Earlier",
+};
+
 export default function Transactions({ transactions, onAdd, onUpdate, onDelete, currency, showAddModal, onCloseAddModal }) {
   const [query, setQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -135,76 +157,83 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
               }
             />
           ) : (
-            <ul className="divide-y divide-stone-100">
-              {filtered.map((t) => {
-                const meta = categoryMeta(t.category, t.type);
-                if (editing === t.id) {
-                  return (
-                    <TxEditRow
-                      key={t.id}
-                      tx={t}
-                      onCancel={() => setEditing(null)}
-                      onSave={(patch) => {
-                        onUpdate(t.id, patch);
-                        setEditing(null);
-                      }}
-                    />
-                  );
-                }
-                return (
-                  <li
-                    key={t.id}
-                    className="py-3 flex items-center gap-3 group hover:bg-stone-50 -mx-2 px-2 rounded-lg transition border-l-2 border-transparent hover:border-l-brand-400 focus-within:border-l-brand-400"
-                  >
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                      style={{ background: meta.color + "22" }}
-                    >
-                      {meta.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-stone-900 truncate">
-                        {t.note || t.category}
-                      </div>
-                      <div className="text-xs text-stone-500">
-                        {t.category} • {prettyDate(t.date)}
-                        {t.recurringId ? (
-                          <span className="ml-1 px-1.5 py-0.5 rounded bg-brand-50 text-brand-700 text-[10px] font-semibold">
-                            RECURRING
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div
-                      className={`font-semibold tabular-nums ${
-                        t.type === "income" ? "text-emerald-600" : "text-stone-900"
-                      }`}
-                    >
-                      {t.type === "income" ? "+" : "−"}
-                      {formatMoney(t.amount, currency)}
-                    </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                      <button
-                        onClick={() => setEditing(t.id)}
-                        className="p-1.5 rounded-md hover:bg-stone-200 text-stone-600 focus:ring-2 focus:ring-brand-400 focus:outline-none"
-                        title="Edit"
-                        aria-label="Edit transaction"
+            groupByDate(filtered).map(([group, txs]) => (
+              <div key={group}>
+                <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide px-2 py-2 sticky top-0 bg-white/90 backdrop-blur z-10 border-b border-stone-100 dark:bg-stone-900/90">
+                  {dateLabels[group]}
+                </div>
+                <ul className="divide-y divide-stone-100">
+                  {txs.map((t) => {
+                    const meta = categoryMeta(t.category, t.type);
+                    if (editing === t.id) {
+                      return (
+                        <TxEditRow
+                          key={t.id}
+                          tx={t}
+                          onCancel={() => setEditing(null)}
+                          onSave={(patch) => {
+                            onUpdate(t.id, patch);
+                            setEditing(null);
+                          }}
+                        />
+                      );
+                    }
+                    return (
+                      <li
+                        key={t.id}
+                        className="py-3 flex items-center gap-3 group hover:bg-stone-50 -mx-2 px-2 rounded-lg transition border-l-2 border-transparent hover:border-l-brand-400 focus-within:border-l-brand-400"
                       >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => onDelete(t.id)}
-                        className="p-1.5 rounded-md hover:bg-rose-100 text-rose-600 focus:ring-2 focus:ring-brand-400 focus:outline-none"
-                        title="Delete"
-                        aria-label="Delete transaction"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                          style={{ background: meta.color + "22" }}
+                        >
+                          {meta.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-stone-900 truncate">
+                            {t.note || t.category}
+                          </div>
+                          <div className="text-xs text-stone-500">
+                            {t.category} • {prettyDate(t.date)}
+                            {t.recurringId ? (
+                              <span className="ml-1 px-1.5 py-0.5 rounded bg-brand-50 text-brand-700 text-[10px] font-semibold">
+                                RECURRING
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                        <div
+                          className={`font-semibold tabular-nums ${
+                            t.type === "income" ? "text-emerald-600" : "text-stone-900"
+                          }`}
+                        >
+                          {t.type === "income" ? "+" : "−"}
+                          {formatMoney(t.amount, currency)}
+                        </div>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                          <button
+                            onClick={() => setEditing(t.id)}
+                            className="p-1.5 rounded-md hover:bg-stone-200 text-stone-600 focus:ring-2 focus:ring-brand-400 focus:outline-none"
+                            title="Edit"
+                            aria-label="Edit transaction"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => onDelete(t.id)}
+                            className="p-1.5 rounded-md hover:bg-rose-100 text-rose-600 focus:ring-2 focus:ring-brand-400 focus:outline-none"
+                            title="Delete"
+                            aria-label="Delete transaction"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))
           )}
         </div>
       </div>
