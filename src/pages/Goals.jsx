@@ -99,9 +99,9 @@ export default function Goals({ goals, setGoals, currency, toaster }) {
                           / {formatMoney(g.target, currency)}
                         </span>
                       </div>
-                      <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-2.5 bg-stone-100 rounded-full overflow-hidden">
                         <div
-                          className={`h-full transition-all ${
+                          className={`h-full transition-all progress-animate ${
                             complete
                               ? "bg-gradient-to-r from-emerald-400 to-emerald-600"
                               : "bg-gradient-to-r from-brand-500 to-brand-700"
