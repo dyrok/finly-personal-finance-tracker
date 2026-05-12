@@ -41,8 +41,8 @@ export default function Recurring({ recurring, setRecurring, currency, toaster }
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Recurring Transactions</h2>
-          <p className="text-sm text-slate-500">
+          <h2 className="text-xl font-bold text-stone-900">Recurring Transactions</h2>
+          <p className="text-sm text-stone-500">
             Auto-add subscriptions, rent, and regular paychecks
           </p>
         </div>
@@ -84,25 +84,34 @@ export default function Recurring({ recurring, setRecurring, currency, toaster }
                     {meta.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-900 truncate">{r.name}</h3>
-                    <p className="text-xs text-slate-500">{r.category}</p>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-stone-900 truncate">{r.name}</h3>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+                          r.active ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        {r.active ? "Active" : "Paused"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-500">{r.category}</p>
                   </div>
                 </div>
 
                 <div className="mt-3 flex items-baseline gap-2">
                   <span
                     className={`text-2xl font-bold tabular-nums ${
-                      r.type === "income" ? "text-emerald-600" : "text-slate-900"
+                      r.type === "income" ? "text-emerald-600" : "text-stone-900"
                     }`}
                   >
                     {r.type === "income" ? "+" : "−"}
                     {formatMoney(r.amount, currency)}
                   </span>
-                  <span className="text-xs text-slate-500 capitalize">{r.frequency}</span>
+                  <span className="text-xs text-stone-500 capitalize">{r.frequency}</span>
                 </div>
 
-                <div className="text-xs text-slate-500 mt-2">
-                  Next: <span className="font-medium text-slate-700">{prettyDate(r.nextDate)}</span>
+                <div className="text-xs text-stone-500 mt-2">
+                  Next: <span className="font-medium text-stone-600">{prettyDate(r.nextDate)}</span>
                 </div>
 
                 <div className="flex gap-2 mt-4">
@@ -160,8 +169,8 @@ function RecurringForm({ onAdd, onCancel }) {
 
   return (
     <form onSubmit={submit} className="card">
-      <h3 className="font-semibold text-slate-900 mb-4">New Recurring Rule</h3>
-      <div className="flex gap-2 mb-3 p-1 bg-slate-100 rounded-lg">
+      <h3 className="font-semibold text-stone-900 mb-4">New Recurring Rule</h3>
+      <div className="flex gap-2 mb-3 p-1 bg-stone-100 rounded-lg">
         <button
           type="button"
           onClick={() => {
@@ -169,7 +178,7 @@ function RecurringForm({ onAdd, onCancel }) {
             setCategory(EXPENSE_CATEGORIES[0].name);
           }}
           className={`flex-1 py-1.5 rounded-md text-sm font-medium transition ${
-            type === "expense" ? "bg-white shadow-sm text-rose-600" : "text-slate-600"
+            type === "expense" ? "bg-white shadow-sm text-rose-600" : "text-stone-600"
           }`}
         >
           Expense
@@ -181,7 +190,7 @@ function RecurringForm({ onAdd, onCancel }) {
             setCategory(INCOME_CATEGORIES[0].name);
           }}
           className={`flex-1 py-1.5 rounded-md text-sm font-medium transition ${
-            type === "income" ? "bg-white shadow-sm text-emerald-600" : "text-slate-600"
+            type === "income" ? "bg-white shadow-sm text-emerald-600" : "text-stone-600"
           }`}
         >
           Income
