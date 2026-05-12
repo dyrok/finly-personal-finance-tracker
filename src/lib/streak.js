@@ -1,7 +1,9 @@
 import { useLocalStorage } from "./storage";
 
+const MS_PER_DAY = 86400000;
+
 export function getTodayISO() {
-  return new Date().toISOString().slice(0, 10);
+  return new Date().toLocaleDateString("en-CA");
 }
 
 export function daysBetween(dateA, dateB) {
@@ -16,7 +18,7 @@ export function calculateStreak(transactions) {
 
   const dates = [...new Set(transactions.map((t) => t.date))].sort().reverse();
   const today = getTodayISO();
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - MS_PER_DAY).toLocaleDateString("en-CA");
 
   let currentStreak = 0;
   let checkDate = today;
@@ -25,7 +27,7 @@ export function calculateStreak(transactions) {
   for (const date of dates) {
     if (date === checkDate || date === yesterday) {
       tempStreak++;
-      checkDate = new Date(new Date(date) - 86400000).toISOString().slice(0, 10);
+      checkDate = new Date(new Date(date) - MS_PER_DAY).toLocaleDateString("en-CA");
     }
   }
   currentStreak = tempStreak;
@@ -51,7 +53,7 @@ export function calculateStreak(transactions) {
   };
 }
 
-export function useStreak(transactions) {
+export function useStreak() {
   const [streakData, setStreakData] = useLocalStorage("ft.streak", {
     lastActiveDate: null,
     currentStreak: 0,
@@ -62,7 +64,7 @@ export function useStreak(transactions) {
 
   const updateStreak = (txDate) => {
     const today = getTodayISO();
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - MS_PER_DAY).toLocaleDateString("en-CA");
     const lastDate = streakData.lastActiveDate;
 
     if (lastDate === today) return;
@@ -86,5 +88,6 @@ export function useStreak(transactions) {
 export const STREAK_MILESTONES = [7, 14, 30, 60, 100, 200, 365];
 
 export function getNextMilestone(currentStreak) {
-  return STREAK_MILESTONES.find((m) => m > currentStreak) || STREAK_MILESTONES[STREAK_MILESTONES.length - 1];
+  if (currentStreak >= 365) return null;
+  return STREAK_MILESTONES.find((m) => m > currentStreak);
 }
