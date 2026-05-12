@@ -36,8 +36,8 @@ export default function Goals({ goals, setGoals, currency, toaster }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Savings Goals</h2>
-          <p className="text-sm text-slate-500">Track progress toward what matters</p>
+          <h2 className="text-xl font-bold text-stone-900">Savings Goals</h2>
+          <p className="text-sm text-stone-500">Track progress toward what matters</p>
         </div>
         <button onClick={() => setShowForm((s) => !s)} className="btn-primary">
           <Plus className="w-4 h-4" />
@@ -62,103 +62,152 @@ export default function Goals({ goals, setGoals, currency, toaster }) {
           />
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {goals.map((g) => {
-            const pct = Math.min(100, (g.saved / g.target) * 100);
-            const remaining = Math.max(0, g.target - g.saved);
-            const complete = pct >= 100;
-            const deadline = g.deadline ? new Date(g.deadline) : null;
-            const daysLeft = deadline
-              ? Math.ceil((deadline - new Date()) / (1000 * 60 * 60 * 24))
-              : null;
+        <>
+          {(() => {
+            const activeGoals = goals.filter((g) => Math.min(100, (g.saved / g.target) * 100) < 100);
+            const completedGoals = goals.filter((g) => Math.min(100, (g.saved / g.target) * 100) >= 100);
             return (
-              <div key={g.id} className="card relative overflow-hidden">
-                {complete && (
-                  <div className="absolute top-3 right-3 text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">
-                    Complete 🎉
+              <>
+                {activeGoals.length === 0 ? (
+                  <div className="card">
+                    <EmptyState
+                      icon={Target}
+                      title="No savings goals yet"
+                      description="Set a target — emergency fund, vacation, new laptop — and watch your progress."
+                      action={
+                        <button onClick={() => setShowForm(true)} className="btn-primary">
+                          <Plus className="w-4 h-4" />
+                          Create your first goal
+                        </button>
+                      }
+                    />
+                  </div>
+                ) : (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {activeGoals.map((g) => {
+                      const pct = Math.min(100, (g.saved / g.target) * 100);
+                      const remaining = Math.max(0, g.target - g.saved);
+                      const complete = pct >= 100;
+                      const deadline = g.deadline ? new Date(g.deadline) : null;
+                      const daysLeft = deadline
+                        ? Math.ceil((deadline - new Date()) / (1000 * 60 * 60 * 24))
+                        : null;
+                      return (
+                        <div key={g.id} className="card relative overflow-hidden">
+                          {editing === g.id ? (
+                            <GoalEditForm
+                              goal={g}
+                              onSave={(patch) => updateGoal(g.id, patch)}
+                              onCancel={() => setEditing(null)}
+                            />
+                          ) : (
+                            <>
+                              <div className="text-3xl mb-2">{g.emoji || "🎯"}</div>
+                              <h3 className="font-bold text-stone-900 text-lg">{g.name}</h3>
+                              {g.note ? <p className="text-xs text-stone-500 mt-0.5">{g.note}</p> : null}
+
+                              <div className="mt-4">
+                                <div className="flex items-baseline justify-between mb-1.5">
+                                  <span className="text-xl font-bold text-stone-900 tabular-nums">
+                                    {formatMoney(g.saved, currency)}
+                                  </span>
+                                  <span className="text-sm text-stone-500 tabular-nums">
+                                    / {formatMoney(g.target, currency)}
+                                  </span>
+                                </div>
+                                <div className="h-2.5 bg-stone-100 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full transition-all progress-animate ${
+                                      complete
+                                        ? "bg-gradient-to-r from-emerald-400 to-emerald-600"
+                                        : "bg-gradient-to-r from-brand-500 to-brand-700"
+                                    }`}
+                                    style={{ width: `${pct}%` }}
+                                  />
+                                </div>
+                                <div className="flex justify-between text-xs text-stone-500 mt-1.5">
+                                  <span>{pct.toFixed(0)}% saved</span>
+                                  <span>{formatMoney(remaining, currency)} to go</span>
+                                </div>
+                              </div>
+
+                              {deadline && (
+                                <div className="mt-3 text-xs text-stone-500">
+                                  Target date: {prettyDate(g.deadline)}{" "}
+                                  {daysLeft !== null && daysLeft >= 0 && (
+                                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 font-semibold">
+                                      {daysLeft}d left
+                                    </span>
+                                  )}
+                                  {daysLeft !== null && daysLeft < 0 && !complete && (
+                                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-semibold">
+                                      Overdue
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+
+                              <div className="flex items-center gap-2 mt-4">
+                                <ContributeButton onContribute={(amt) => adjustSaved(g.id, amt)} />
+                                <button
+                                  onClick={() => adjustSaved(g.id, -10)}
+                                  className="btn-ghost p-2"
+                                  title="-10"
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => setEditing(g.id)}
+                                  className="btn-ghost p-2"
+                                  title="Edit"
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => deleteGoal(g.id)}
+                                  className="btn-danger p-2 ml-auto"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
-                {editing === g.id ? (
-                  <GoalEditForm
-                    goal={g}
-                    onSave={(patch) => updateGoal(g.id, patch)}
-                    onCancel={() => setEditing(null)}
-                  />
-                ) : (
-                  <>
-                    <div className="text-3xl mb-2">{g.emoji || "🎯"}</div>
-                    <h3 className="font-bold text-slate-900 text-lg">{g.name}</h3>
-                    {g.note ? <p className="text-xs text-slate-500 mt-0.5">{g.note}</p> : null}
 
-                    <div className="mt-4">
-                      <div className="flex items-baseline justify-between mb-1.5">
-                        <span className="text-xl font-bold text-slate-900 tabular-nums">
-                          {formatMoney(g.saved, currency)}
-                        </span>
-                        <span className="text-sm text-slate-500 tabular-nums">
-                          / {formatMoney(g.target, currency)}
-                        </span>
-                      </div>
-                      <div className="h-2.5 bg-stone-100 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full transition-all progress-animate ${
-                            complete
-                              ? "bg-gradient-to-r from-emerald-400 to-emerald-600"
-                              : "bg-gradient-to-r from-brand-500 to-brand-700"
-                          }`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <div className="flex justify-between text-xs text-slate-500 mt-1.5">
-                        <span>{pct.toFixed(0)}% saved</span>
-                        <span>{formatMoney(remaining, currency)} to go</span>
-                      </div>
+                {completedGoals.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-bold text-stone-900 mb-3 flex items-center gap-2">
+                      <span>Achievements</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">
+                        {completedGoals.length}
+                      </span>
+                    </h3>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {completedGoals.map((g) => (
+                        <div key={g.id} className="card relative overflow-hidden opacity-90">
+                          <div className="absolute top-3 right-3 text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">
+                            Complete
+                          </div>
+                          <div className="text-3xl mb-2">{g.emoji || "🎉"}</div>
+                          <h3 className="font-bold text-stone-900 text-lg">{g.name}</h3>
+                          <div className="mt-3 text-2xl font-bold text-emerald-600 tabular-nums">
+                            {formatMoney(g.target, currency)}
+                          </div>
+                          <div className="text-xs text-stone-500 mt-1">Goal reached</div>
+                        </div>
+                      ))}
                     </div>
-
-                    {deadline && (
-                      <div className="mt-3 text-xs text-slate-500">
-                        Target date: {prettyDate(g.deadline)}{" "}
-                        {daysLeft !== null && daysLeft >= 0 && (
-                          <span className="text-slate-700 font-medium">
-                            • {daysLeft} day{daysLeft !== 1 ? "s" : ""} left
-                          </span>
-                        )}
-                        {daysLeft !== null && daysLeft < 0 && !complete && (
-                          <span className="text-rose-600 font-medium">• Overdue</span>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2 mt-4">
-                      <ContributeButton onContribute={(amt) => adjustSaved(g.id, amt)} />
-                      <button
-                        onClick={() => adjustSaved(g.id, -10)}
-                        className="btn-ghost p-2"
-                        title="-10"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => setEditing(g.id)}
-                        className="btn-ghost p-2"
-                        title="Edit"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => deleteGoal(g.id)}
-                        className="btn-danger p-2 ml-auto"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </>
+                  </div>
                 )}
-              </div>
+              </>
             );
-          })}
-        </div>
+          })()}
+        </>
       )}
     </div>
   );
@@ -239,7 +288,7 @@ function GoalForm({ onAdd, onCancel }) {
 
   return (
     <form onSubmit={submit} className="card">
-      <h3 className="font-semibold text-slate-900 mb-4">New Savings Goal</h3>
+      <h3 className="font-semibold text-stone-900 mb-4">New Savings Goal</h3>
       <div className="grid sm:grid-cols-2 gap-3">
         <div className="sm:col-span-2">
           <label className="label">Goal name</label>
@@ -282,7 +331,7 @@ function GoalForm({ onAdd, onCancel }) {
                 type="button"
                 onClick={() => setEmoji(e)}
                 className={`w-9 h-9 rounded-lg text-lg transition ${
-                  emoji === e ? "bg-brand-100 ring-2 ring-brand-500" : "bg-slate-100 hover:bg-slate-200"
+                  emoji === e ? "bg-brand-100 ring-2 ring-brand-500" : "bg-stone-100 hover:bg-stone-200"
                 }`}
               >
                 {e}
