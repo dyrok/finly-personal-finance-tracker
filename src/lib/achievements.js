@@ -129,25 +129,28 @@ export function useAchievements(transactions, goals, recurring, budgets, challen
   const [unlocked, setUnlocked] = useLocalStorage("ft.achievements", []);
 
   const checkAndUnlock = () => {
-    const txCount = transactions.length;
-    const goalCount = goals.length;
-    const completedGoals = goals.filter((g) => Math.min(100, (g.saved / g.target) * 100) >= 100).length;
-    const recurringCount = recurring.length;
-    const budgetCount = Object.keys(budgets).length;
+    const txCount = (transactions?.length) ?? 0;
+    const goalCount = (goals?.length) ?? 0;
+    const completedGoals = (goals ?? []).filter((g) => g.saved >= g.target).length;
+    const recurringCount = (recurring?.length) ?? 0;
+    const budgetCount = Object.keys(budgets ?? {}).length;
     const completedChallenges = challengePoints || 0;
 
     const now = new Date();
-    const hasEarly = transactions.some((t) => {
-      const d = new Date(t.date + "T00:00:00");
+    const hasEarly = (transactions ?? []).some((t) => {
+      if (!t.date) return false;
+      const d = new Date(t.date + "T12:00:00");
       return d.getHours() < 9;
     });
-    const hasLate = transactions.some((t) => {
-      const d = new Date(t.date + "T00:00:00");
+    const hasLate = (transactions ?? []).some((t) => {
+      if (!t.date) return false;
+      const d = new Date(t.date + "T12:00:00");
       return d.getHours() >= 22;
     });
 
-    const currentMonth = transactions.filter((t) => {
-      const d = new Date(t.date + "T00:00:00");
+    const currentMonth = (transactions ?? []).filter((t) => {
+      if (!t.date) return false;
+      const d = new Date(t.date + "T12:00:00");
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     });
     const monthIncome = currentMonth.filter((t) => t.type === "income").reduce((sum, t) => sum + Number(t.amount), 0);
