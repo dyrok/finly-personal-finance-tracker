@@ -44,32 +44,33 @@ const STYLES = {
 
 export default function Toaster({ items, onDismiss }) {
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-[calc(100%-2rem)]">
+    <div
+      className="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-[calc(100%-2rem)]"
+      role="region"
+      aria-label="Notifications"
+      aria-live="polite"
+    >
       {items.map((it) => {
         const s = STYLES[it.level] || STYLES.info;
         const Icon = s.icon;
         return (
           <div
             key={it.id}
-            className={`flex items-start gap-3 px-4 py-3 rounded-xl border shadow-lg backdrop-blur ${s.cls} animate-[slideIn_200ms_ease-out]`}
+            className={`flex items-start gap-3 px-4 py-3 rounded-xl border shadow-lg backdrop-blur toast-enter ${s.cls}`}
+            role="alert"
           >
             <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${s.iconCls}`} />
             <div className="flex-1 text-sm font-medium">{it.message}</div>
             <button
               onClick={() => onDismiss(it.id)}
               className="text-slate-500 hover:text-slate-900 transition"
+              aria-label="Dismiss notification"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         );
       })}
-      <style>{`
-        @keyframes slideIn {
-          from { transform: translateY(8px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 }
