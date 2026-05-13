@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import {
   PieChart,
   Pie,
@@ -18,6 +18,10 @@ import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Target as TargetIcon, 
 import StatCard from "../components/StatCard";
 import TransactionForm from "../components/TransactionForm";
 import EmptyState from "../components/EmptyState";
+import StreakCounter from "../components/StreakCounter";
+import WeeklyChallengeCard from "../components/WeeklyChallengeCard";
+import { useStreak } from "../lib/streak";
+import { useWeeklyChallenge, getWeeklyChallengeStatus } from "../lib/weeklyChallenges";
 import { formatMoney, ym, prettyDate } from "../lib/format";
 import { categoryMeta } from "../lib/categories";
 
@@ -30,6 +34,36 @@ export default function Dashboard({
   onAddTransaction,
   onSwitchTab,
 }) {
+  const { streakData, updateStreak } = useStreak();
+  const {
+    challengeData,
+    initChallenge,
+    refreshChallenge,
+    acceptChallenge,
+    completeChallenge,
+  } = useWeeklyChallenge();
+
+  useEffect(() => {
+    initChallenge();
+  }, [initChallenge]);
+
+  useEffect(() => {
+    if (!challengeData.activeChallenge) {
+      refreshChallenge();
+    }
+  }, [challengeData.activeChallenge, refreshChallenge]);
+
+  useEffect(() => {
+    if (transactions[0]?.date) {
+      updateStreak(transactions[0].date);
+    }
+  }, [transactions[0]?.date, updateStreak]);
+
+  const activeChallenge = challengeData.acceptedChallenge || challengeData.activeChallenge;
+  const challengeProgress = activeChallenge
+    ? getWeeklyChallengeStatus(activeChallenge, transactions, budgets)
+    : null;
+
   const currentMonth = ym(new Date());
 
   const monthData = useMemo(() => {
@@ -78,6 +112,11 @@ export default function Dashboard({
 
   return (
     <div className="space-y-6">
+      <StreakCounter
+        streak={streakData.currentStreak}
+        longestStreak={streakData.longestStreak}
+      />
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           label="Income"
@@ -314,6 +353,13 @@ export default function Dashboard({
             <p className="text-xs text-slate-500 mb-4">Log a transaction in seconds</p>
             <TransactionForm onAdd={onAddTransaction} compact />
           </div>
+
+          <WeeklyChallengeCard
+            challenge={activeChallenge}
+            progress={challengeProgress}
+            onAccept={acceptChallenge}
+            onComplete={challengeProgress?.complete ? completeChallenge : undefined}
+          />
 
           {goals.length > 0 && (
             <div className="card">

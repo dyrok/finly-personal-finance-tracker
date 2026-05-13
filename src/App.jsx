@@ -8,7 +8,9 @@ import {
   Wallet,
   Settings as SettingsIcon,
   Plus,
+  Trophy,
 } from "lucide-react";
+import AchievementsPage from "./components/AchievementsPage";
 import { useLocalStorage, uid } from "./lib/storage";
 import { materializeRecurring } from "./lib/recurring";
 import { ym } from "./lib/format";
@@ -24,6 +26,7 @@ const TABS = [
   { id: "dashboard", label: "Overview", icon: LayoutDashboard },
   { id: "transactions", label: "History", icon: History },
   { id: "goals", label: "Savings", icon: Target },
+  { id: "achievements", label: "Badges", icon: Trophy },
   { id: "recurring", label: "Automation", icon: RotateCw },
   { id: "report", label: "Reports", icon: FileBarChart },
   { id: "settings", label: "Settings", icon: SettingsIcon },
@@ -244,6 +247,15 @@ export default function App() {
         )}
         {tab === "goals" && (
           <Goals goals={goals} setGoals={setGoals} currency={settings.currency} toaster={toaster} />
+        )}
+        {tab === "achievements" && (
+          <AchievementsPage
+            transactions={transactions}
+            goals={goals}
+            recurring={recurring}
+            budgets={budgets}
+            toaster={toaster}
+          />
         )}
         {tab === "recurring" && (
           <Recurring
