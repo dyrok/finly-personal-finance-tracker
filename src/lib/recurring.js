@@ -1,40 +1,75 @@
 import { uid } from "./storage";
 
 export function nextDate(dateISO, frequency) {
-  const d = new Date(dateISO);
+  const [y, m, d] = dateISO.split("-").map(Number);
+  let year = y;
+  let month = m;
+  let day = d;
+
   switch (frequency) {
     case "daily":
-      d.setDate(d.getDate() + 1);
+      day += 1;
       break;
     case "weekly":
-      d.setDate(d.getDate() + 7);
+      day += 7;
       break;
     case "biweekly":
-      d.setDate(d.getDate() + 14);
+      day += 14;
       break;
     case "monthly":
-      d.setMonth(d.getMonth() + 1);
+      month += 1;
+      if (month > 12) {
+        month = 1;
+        year += 1;
+      }
       break;
     case "yearly":
-      d.setFullYear(d.getFullYear() + 1);
+      year += 1;
       break;
     default:
-      d.setMonth(d.getMonth() + 1);
+      month += 1;
+      if (month > 12) {
+        month = 1;
+        year += 1;
+      }
   }
-  return d.toISOString().slice(0, 10);
+
+  const maxDay = new Date(year, month, 0).getDate();
+  if (day > maxDay) day = maxDay;
+
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-export function materializeRecurring(recurring, transactions) {
-  const today = new Date().toISOString().slice(0, 10);
+export function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export function materializeRecurring(recurring, existingTransactions) {
+  const today = todayISO();
+
+  let allTransactions = existingTransactions || [];
+  try {
+    const stored = localStorage.getItem("ft.transactions");
+    if (stored) {
+      allTransactions = JSON.parse(stored);
+    }
+  } catch {
+    /* use passed array */
+  }
+
   const newTx = [];
   const updatedRecurring = recurring.map((r) => {
     if (!r.active) return r;
+
     let next = r.nextDate;
+    const createdDates = new Set();
+
     while (next <= today) {
-      const exists = transactions.some(
+      const exists = allTransactions.some(
         (t) => t.recurringId === r.id && t.date === next,
       );
-      if (!exists) {
+      if (!exists && !createdDates.has(next)) {
         newTx.push({
           id: uid(),
           type: r.type,
@@ -44,10 +79,13 @@ export function materializeRecurring(recurring, transactions) {
           date: next,
           recurringId: r.id,
         });
+        createdDates.add(next);
       }
       next = nextDate(next, r.frequency);
     }
+
     return { ...r, nextDate: next };
   });
+
   return { newTx, updatedRecurring };
 }

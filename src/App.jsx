@@ -52,13 +52,18 @@ export default function App() {
   useEffect(() => {
     if (recurring.length === 0) return;
     const { newTx, updatedRecurring } = materializeRecurring(recurring, transactions);
-    if (newTx.length > 0) {
-      setTransactions((prev) => [...newTx, ...prev]);
+    const needsUpdate =
+      newTx.length > 0 ||
+      updatedRecurring.some((r, i) => r.nextDate !== recurring[i]?.nextDate);
+    if (needsUpdate) {
+      if (newTx.length > 0) {
+        setTransactions((prev) => [...newTx, ...prev]);
+        toaster.show(`Added ${newTx.length} recurring transaction(s)`, "info");
+      }
       setRecurring(updatedRecurring);
-      toaster.show(`Added ${newTx.length} recurring transaction(s)`, "info");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [recurring.length, transactions.length]);
 
   const monthlyByCategory = useMemo(() => {
     const m = ym(new Date());
@@ -210,7 +215,13 @@ export default function App() {
           />
         )}
         {tab === "goals" && (
-          <Goals goals={goals} setGoals={setGoals} currency={settings.currency} toaster={toaster} />
+          <Goals
+            goals={goals}
+            setGoals={setGoals}
+            currency={settings.currency}
+            toaster={toaster}
+            onAddTransaction={addTransaction}
+          />
         )}
         {tab === "recurring" && (
           <Recurring

@@ -4,7 +4,7 @@ import EmptyState from "../components/EmptyState";
 import { formatMoney, prettyDate } from "../lib/format";
 import { uid } from "../lib/storage";
 
-export default function Goals({ goals, setGoals, currency, toaster }) {
+export default function Goals({ goals, setGoals, currency, toaster, onAddTransaction }) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
 
@@ -20,10 +20,19 @@ export default function Goals({ goals, setGoals, currency, toaster }) {
     toaster.show("Goal deleted", "info");
   }
 
-  function adjustSaved(id, delta) {
+  function adjustSaved(id, delta, goalName) {
     setGoals((prev) =>
       prev.map((g) => (g.id === id ? { ...g, saved: Math.max(0, Number(g.saved) + delta) } : g)),
     );
+    if (delta > 0 && onAddTransaction) {
+      onAddTransaction({
+        type: "expense",
+        amount: delta,
+        category: "Savings",
+        note: `Goal: ${goalName}`,
+        date: new Date().toISOString().slice(0, 10),
+      });
+    }
   }
 
   function updateGoal(id, patch) {
@@ -130,9 +139,9 @@ export default function Goals({ goals, setGoals, currency, toaster }) {
                     )}
 
                     <div className="flex items-center gap-2 mt-4">
-                      <ContributeButton onContribute={(amt) => adjustSaved(g.id, amt)} />
+                      <ContributeButton onContribute={(amt) => adjustSaved(g.id, amt, g.name)} />
                       <button
-                        onClick={() => adjustSaved(g.id, -10)}
+                        onClick={() => adjustSaved(g.id, -10, g.name)}
                         className="btn-ghost p-2"
                         title="-10"
                       >
