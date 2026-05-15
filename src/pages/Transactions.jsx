@@ -27,7 +27,7 @@ const dateLabels = {
   earlier: "Earlier",
 };
 
-export default function Transactions({ transactions, onAdd, onUpdate, onDelete, currency, showAddModal, onCloseAddModal }) {
+export default function Transactions({ transactions, onAdd, onUpdate, onDelete, currency, showAddModal }) {
   const [query, setQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterCat, setFilterCat] = useState("all");

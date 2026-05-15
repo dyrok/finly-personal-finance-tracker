@@ -20,7 +20,6 @@ export function calculateStreak(transactions) {
   const today = getTodayISO();
   const yesterday = new Date(Date.now() - MS_PER_DAY).toLocaleDateString("en-CA");
 
-  let currentStreak = 0;
   let checkDate = today;
   let tempStreak = 0;
 
@@ -30,7 +29,6 @@ export function calculateStreak(transactions) {
       checkDate = new Date(new Date(date) - MS_PER_DAY).toLocaleDateString("en-CA");
     }
   }
-  currentStreak = tempStreak;
 
   const uniqueDates = [...new Set(transactions.map((t) => t.date))].sort();
   let maxStreak = 0;
@@ -47,7 +45,7 @@ export function calculateStreak(transactions) {
   maxStreak = Math.max(maxStreak, runStreak);
 
   return {
-    currentStreak,
+    currentStreak: tempStreak,
     lastActiveDate: dates[0] || null,
     longestStreak: maxStreak,
   };

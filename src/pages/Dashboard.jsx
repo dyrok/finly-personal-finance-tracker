@@ -5,8 +5,6 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -53,11 +51,13 @@ export default function Dashboard({
     }
   }, [challengeData.activeChallenge, refreshChallenge]);
 
+  const firstTransactionDate = transactions[0]?.date;
+
   useEffect(() => {
-    if (transactions[0]?.date) {
-      updateStreak(transactions[0].date);
+    if (firstTransactionDate) {
+      updateStreak(firstTransactionDate);
     }
-  }, [transactions[0]?.date, updateStreak]);
+  }, [firstTransactionDate, updateStreak]);
 
   const activeChallenge = challengeData.acceptedChallenge || challengeData.activeChallenge;
   const challengeProgress = activeChallenge

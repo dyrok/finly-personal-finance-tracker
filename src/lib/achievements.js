@@ -82,20 +82,20 @@ export const ACHIEVEMENT_DEFINITIONS = [
     condition: (ctx) => ctx.transactionCount >= 100,
   },
   {
-    id: "early-bird",
-    title: "Early Bird",
-    description: "Log a transaction before 9 AM",
-    icon: "🐦",
+    id: "five-categories",
+    title: "Diverse Spender",
+    description: "Used 5+ different expense categories",
+    icon: "🎨",
     category: "habit",
-    condition: (ctx) => ctx.hasEarlyTransaction,
+    condition: (ctx) => ctx.uniqueExpenseCategories >= 5,
   },
   {
-    id: "night-owl",
-    title: "Night Owl",
-    description: "Log a transaction after 10 PM",
-    icon: "🦉",
+    id: "income-logged",
+    title: "Full Picture",
+    description: "Logged both income and expenses",
+    icon: "📊",
     category: "habit",
-    condition: (ctx) => ctx.hasLateTransaction,
+    condition: (ctx) => ctx.hasIncome && ctx.hasExpense,
   },
   {
     id: "savings-rate",
@@ -107,7 +107,7 @@ export const ACHIEVEMENT_DEFINITIONS = [
   },
   {
     id: "week-challenger",
-    title: "Week Warrior",
+    title: "Challenge Champion",
     description: "Complete 3 weekly challenges",
     icon: "🏅",
     category: "challenge",
@@ -137,17 +137,6 @@ export function useAchievements(transactions, goals, recurring, budgets, challen
     const completedChallenges = challengePoints || 0;
 
     const now = new Date();
-    const hasEarly = (transactions ?? []).some((t) => {
-      if (!t.date) return false;
-      const d = new Date(t.date + "T12:00:00");
-      return d.getHours() < 9;
-    });
-    const hasLate = (transactions ?? []).some((t) => {
-      if (!t.date) return false;
-      const d = new Date(t.date + "T12:00:00");
-      return d.getHours() >= 22;
-    });
-
     const currentMonth = (transactions ?? []).filter((t) => {
       if (!t.date) return false;
       const d = new Date(t.date + "T12:00:00");
@@ -157,6 +146,10 @@ export function useAchievements(transactions, goals, recurring, budgets, challen
     const monthExpense = currentMonth.filter((t) => t.type === "expense").reduce((sum, t) => sum + Number(t.amount), 0);
     const savingsRate = monthIncome > 0 ? ((monthIncome - monthExpense) / monthIncome) * 100 : 0;
 
+    const expenseCats = new Set((transactions ?? []).filter((t) => t.type === "expense").map((t) => t.category));
+    const hasIncome = (transactions ?? []).some((t) => t.type === "income");
+    const hasExpense = (transactions ?? []).some((t) => t.type === "expense");
+
     const ctx = {
       transactionCount: txCount,
       currentStreak: 0,
@@ -164,8 +157,9 @@ export function useAchievements(transactions, goals, recurring, budgets, challen
       completedGoals,
       recurringCount,
       budgetCount,
-      hasEarlyTransaction: hasEarly,
-      hasLateTransaction: hasLate,
+      uniqueExpenseCategories: expenseCats.size,
+      hasIncome,
+      hasExpense,
       savingsRate,
       daysUnderBudget: 0,
       completedChallenges,

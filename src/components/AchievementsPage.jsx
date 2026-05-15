@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Trophy } from "lucide-react";
 import AchievementBadge from "./AchievementBadge";
 import { ACHIEVEMENT_DEFINITIONS, CATEGORIES, useAchievements } from "../lib/achievements";
@@ -7,26 +7,23 @@ export default function AchievementsPage({ transactions, goals, recurring, budge
   const { unlocked, checkAndUnlock } = useAchievements(transactions, goals, recurring, budgets);
   const [filter, setFilter] = useState("all");
   const [newlyUnlocked, setNewlyUnlocked] = useState([]);
+  const prevUnlockedRef = useRef([]);
 
   useEffect(() => {
-    const newly = checkAndUnlock();
-    if (newly.length > 0) {
-      setNewlyUnlocked(newly);
-      for (const a of newly) {
+    const prevIds = new Set(prevUnlockedRef.current.map((a) => a.id));
+    const newOnes = unlocked.filter((a) => !prevIds.has(a.id));
+    if (newOnes.length > 0) {
+      setNewlyUnlocked((prev) => [...prev, ...newOnes]);
+      for (const a of newOnes) {
         toaster?.show(`Achievement unlocked: ${a.title}`, "success");
       }
+      prevUnlockedRef.current = unlocked;
     }
-  }, []);
+  }, [unlocked, toaster]);
 
   useEffect(() => {
-    const newly = checkAndUnlock();
-    if (newly.length > 0) {
-      setNewlyUnlocked(newly);
-      for (const a of newly) {
-        toaster?.show(`Achievement unlocked: ${a.title}`, "success");
-      }
-    }
-  }, [transactions?.length]);
+    checkAndUnlock();
+  }, [checkAndUnlock]);
 
   const filtered =
     filter === "all"

@@ -24,7 +24,7 @@ export default function Report({ transactions, budgets, currency }) {
     return Array.from(s).sort().reverse();
   }, [transactions]);
 
-  const [month, setMonth] = useState(months[0] || ym(new Date()));
+  const [month, setMonth] = useState(ym(new Date()));
 
   const data = useMemo(() => {
     const txs = transactions.filter((t) => ym(t.date) === month);

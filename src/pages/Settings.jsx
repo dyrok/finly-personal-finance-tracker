@@ -81,6 +81,15 @@ export default function SettingsPanel({
 
   const usedCats = Object.keys(draft);
   const available = EXPENSE_CATEGORIES.filter((c) => !usedCats.includes(c.name));
+  const currencySymbol = (() => {
+    try {
+      return new Intl.NumberFormat(undefined, { style: "currency", currency: settings.currency })
+        .formatToParts(0)
+        .find((p) => p.type === "currency")?.value || "$";
+    } catch {
+      return "$";
+    }
+  })();
 
   return (
     <div className="space-y-4 max-w-3xl">
@@ -161,7 +170,7 @@ export default function SettingsPanel({
                 <span className="font-medium text-slate-800 flex-1">{cat}</span>
                 <div className="relative w-32">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-                    $
+                    {currencySymbol}
                   </span>
                   <input
                     type="number"

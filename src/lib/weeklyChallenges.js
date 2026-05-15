@@ -1,7 +1,4 @@
 import { useLocalStorage } from "./storage";
-import { useStreak } from "./streak";
-
-const MS_PER_DAY = 86400000;
 
 const CHALLENGE_DEFINITIONS = [
   {
@@ -203,8 +200,8 @@ export function getWeeklyChallengeStatus(challenge, transactions, budgets) {
   const config = CHALLENGE_CONFIGS[challenge.type];
   const target = config?.target || 1;
 
-  let current = 0;
-  let isComplete = false;
+  let current;
+  let isComplete;
 
   switch (challenge.type) {
     case "no-spend-weekend": {
@@ -295,8 +292,6 @@ export function useWeeklyChallenge() {
     challengePoints: 0,
     lastChallengeReset: null,
   });
-
-  const { startISO, endISO } = getWeekRangeISO();
 
   const initChallenge = () => {
     if (!challengeData.activeChallenge) return;

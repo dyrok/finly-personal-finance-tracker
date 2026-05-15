@@ -20,7 +20,8 @@ import Goals from "./pages/Goals";
 import Recurring from "./pages/Recurring";
 import Report from "./pages/Report";
 import SettingsPanel from "./pages/Settings";
-import Toaster, { useToaster } from "./components/Toaster";
+import Toaster from "./components/Toaster";
+import { useToaster } from "./hooks/useToaster";
 
 const TABS = [
   { id: "dashboard", label: "Overview", icon: LayoutDashboard },

@@ -1,36 +1,31 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { formatMoney } from "../lib/format";
 
 function AnimatedNumber({ value, currency }) {
   const [display, setDisplay] = useState(0);
-  const startRef = useRef(null);
-  const frameRef = useRef(null);
 
   useEffect(() => {
-    if (typeof value !== "number") {
-      setDisplay(value);
-      return;
-    }
+    if (typeof value !== "number") return;
+
     const duration = 800;
     const start = performance.now();
-    startRef.current = value;
-    const from = 0;
+    let frameId;
 
     function tick(now) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(from + (value - from) * eased);
+      setDisplay(value * eased);
       if (progress < 1) {
-        frameRef.current = requestAnimationFrame(tick);
+        frameId = requestAnimationFrame(tick);
       }
     }
 
-    frameRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frameRef.current);
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
   }, [value]);
 
-  return <span>{typeof value === "number" ? formatMoney(display, currency) : value}</span>;
+  return typeof value === "number" ? formatMoney(display, currency) : value;
 }
 
 export default function StatCard({ label, value, icon: Icon, tone = "brand", sub, currency, delay = 0 }) {
