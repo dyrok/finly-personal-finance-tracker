@@ -157,7 +157,9 @@ export default function App() {
             <div className="text-right">
               <div className="text-xs text-slate-500">Wallet</div>
               <div
-                className={`font-bold text-sm ${totals.balance >= 0 ? "text-emerald-600" : "text-rose-600"}`}
+                className={`font-bold text-sm tabular-nums ${
+                  totals.balance >= 0 ? "text-emerald-600" : "text-rose-600"
+                }`}
               >
                 {new Intl.NumberFormat(undefined, {
                   style: "currency",

@@ -218,9 +218,15 @@ export default function Report({ transactions, budgets, currency }) {
             <ul className="divide-y divide-slate-100">
               {data.catData.map((c) => {
                 const pct = (c.value / data.expense) * 100;
+                const meta = categoryMeta(c.name);
                 return (
                   <li key={c.name} className="py-2.5 flex items-center gap-3">
-                    <span className="text-xl">{categoryMeta(c.name).icon}</span>
+                    <span
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: meta.color + "22" }}
+                    >
+                      <meta.icon className="w-4 h-4" style={{ color: meta.color }} />
+                    </span>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-slate-800">{c.name}</span>

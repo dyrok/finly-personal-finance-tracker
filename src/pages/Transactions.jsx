@@ -89,7 +89,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
               <option value="all">All categories</option>
               {allCategories.map((c) => (
                 <option key={c.name} value={c.name}>
-                  {c.icon} {c.name}
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -151,10 +151,10 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                     className="py-3 flex items-center gap-3 group hover:bg-slate-50 -mx-2 px-2 rounded-lg transition"
                   >
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                       style={{ background: meta.color + "22" }}
                     >
-                      {meta.icon}
+                      <meta.icon className="w-4 h-4" style={{ color: meta.color }} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-slate-900 truncate">
@@ -233,7 +233,7 @@ function TxEditRow({ tx, onCancel, onSave }) {
       >
         {cats.map((c) => (
           <option key={c.name} value={c.name}>
-            {c.icon} {c.name}
+            {c.name}
           </option>
         ))}
       </select>

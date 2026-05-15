@@ -78,10 +78,10 @@ export default function Recurring({ recurring, setRecurring, currency, toaster }
               >
                 <div className="flex items-start justify-between gap-2">
                   <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                    className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: meta.color + "22" }}
                   >
-                    {meta.icon}
+                    <meta.icon className="w-5 h-5" style={{ color: meta.color }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-slate-900 truncate">{r.name}</h3>
@@ -235,7 +235,7 @@ function RecurringForm({ onAdd, onCancel }) {
           >
             {cats.map((c) => (
               <option key={c.name} value={c.name}>
-                {c.icon} {c.name}
+                {c.name}
               </option>
             ))}
           </select>

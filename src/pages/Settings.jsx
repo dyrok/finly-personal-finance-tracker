@@ -137,7 +137,12 @@ export default function SettingsPanel({
             const meta = categoryMeta(cat);
             return (
               <li key={cat} className="py-2.5 flex flex-wrap items-center gap-2">
-                <span className="text-xl">{meta.icon}</span>
+                <span
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: meta.color + "22" }}
+                >
+                  <meta.icon className="w-4 h-4" style={{ color: meta.color }} />
+                </span>
                 <span className="font-medium text-slate-800 flex-1 min-w-[120px]">{cat}</span>
                 <div className="relative w-28 sm:w-32">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
@@ -167,15 +172,19 @@ export default function SettingsPanel({
           <div className="mt-4">
             <div className="text-xs text-slate-500 mb-2">Add budget for…</div>
             <div className="flex flex-wrap gap-2">
-              {available.map((c) => (
-                <button
-                  key={c.name}
-                  onClick={() => addCategory(c.name)}
-                  className="px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 hover:bg-brand-100 hover:text-brand-700 transition"
-                >
-                  {c.icon} {c.name}
-                </button>
-              ))}
+              {available.map((c) => {
+                const Icon = c.icon;
+                return (
+                  <button
+                    key={c.name}
+                    onClick={() => addCategory(c.name)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 hover:bg-brand-100 hover:text-brand-700 transition"
+                  >
+                    <Icon className="w-3 h-3" />
+                    {c.name}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

@@ -43,7 +43,7 @@ body {
 
 @layer components {
   .card {
-    @apply bg-white rounded-2xl shadow-sm border border-slate-200 p-5;
+    @apply bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-sm shadow-slate-200/40 p-5;
   }
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition active:scale-[0.98];
@@ -62,5 +62,21 @@ body {
   }
   .label {
     @apply block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .reveal {
+    animation: reveal 250ms ease-out both;
   }
 }

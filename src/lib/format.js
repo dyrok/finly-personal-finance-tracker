@@ -27,6 +27,19 @@ export function todayISO() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+export function currencySymbol(currency = "USD") {
+  try {
+    const parts = new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).formatToParts(0);
+    return parts.find((p) => p.type === "currency")?.value || currency;
+  } catch {
+    return "$";
+  }
+}
+
 export function prettyDate(iso) {
   const d = new Date(iso);
   return d.toLocaleDateString(undefined, {
