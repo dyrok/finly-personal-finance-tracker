@@ -137,7 +137,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-sm">
@@ -148,11 +148,11 @@ export default function App() {
               <p className="text-[11px] text-slate-500 leading-tight">Personal Finance Tracker</p>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-2">
             <div className="text-right">
-              <div className="text-xs text-slate-500">Balance</div>
+              <div className="text-xs text-slate-500">Wallet</div>
               <div
-                className={`font-bold ${totals.balance >= 0 ? "text-emerald-600" : "text-rose-600"}`}
+                className={`font-bold text-sm ${totals.balance >= 0 ? "text-emerald-600" : "text-rose-600"}`}
               >
                 {new Intl.NumberFormat(undefined, {
                   style: "currency",
@@ -165,7 +165,7 @@ export default function App() {
         </div>
 
         <nav className="max-w-7xl mx-auto px-2 sm:px-4 overflow-x-auto">
-          <div className="flex gap-1 pb-1">
+          <div className="flex gap-0.5 pb-1 min-w-max">
             {TABS.map((t) => {
               const Icon = t.icon;
               const active = tab === t.id;
@@ -173,14 +173,14 @@ export default function App() {
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
-                  className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap transition border-b-2 ${
+                  className={`flex items-center gap-1.5 px-2.5 py-2.5 text-xs sm:text-sm font-medium rounded-t-lg whitespace-nowrap transition border-b-2 ${
                     active
                       ? "text-brand-700 border-brand-600 bg-brand-50/60"
                       : "text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
-                  {t.label}
+                  <span className="hidden sm:inline">{t.label}</span>
                 </button>
               );
             })}
@@ -235,7 +235,7 @@ export default function App() {
         )}
       </main>
 
-      <footer className="text-center text-xs text-slate-400 py-4">
+      <footer className="text-center text-xs text-slate-400 py-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         Finly • Data saved locally in your browser
       </footer>
 

@@ -136,10 +136,10 @@ export default function SettingsPanel({
           {usedCats.map((cat) => {
             const meta = categoryMeta(cat);
             return (
-              <li key={cat} className="py-2.5 flex items-center gap-3">
+              <li key={cat} className="py-2.5 flex flex-wrap items-center gap-2">
                 <span className="text-xl">{meta.icon}</span>
-                <span className="font-medium text-slate-800 flex-1">{cat}</span>
-                <div className="relative w-32">
+                <span className="font-medium text-slate-800 flex-1 min-w-[120px]">{cat}</span>
+                <div className="relative w-28 sm:w-32">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
                     $
                   </span>

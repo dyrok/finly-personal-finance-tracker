@@ -96,7 +96,7 @@ export default function Dashboard({
           sub="this month"
         />
         <StatCard
-          label="Balance"
+          label="Wallet"
           value={balance}
           tone={balance >= 0 ? "brand" : "warn"}
           icon={Wallet}

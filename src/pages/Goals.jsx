@@ -34,7 +34,7 @@ export default function Goals({ goals, setGoals, currency, toaster }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-slate-900">Savings Goals</h2>
           <p className="text-sm text-slate-500">Track progress toward what matters</p>
