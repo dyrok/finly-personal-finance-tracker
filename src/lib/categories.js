@@ -10,7 +10,6 @@ import {
   GraduationCap,
   Plane,
   RotateCw,
-  Target,
   Package,
   Briefcase,
   Laptop,
@@ -31,7 +30,6 @@ export const EXPENSE_CATEGORIES = [
   { name: "Education", color: "#06b6d4", icon: GraduationCap },
   { name: "Travel", color: "#14b8a6", icon: Plane },
   { name: "Subscriptions", color: "#8b5cf6", icon: RotateCw },
-  { name: "Savings", color: "#22c55e", icon: Target },
   { name: "Other", color: "#64748b", icon: Package },
 ];
 

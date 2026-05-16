@@ -15,11 +15,6 @@ body {
   background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
   color: #1f2937;
   min-height: 100vh;
-  min-height: 100dvh;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
 }
 
 * {

@@ -39,7 +39,7 @@ export default function Recurring({ recurring, setRecurring, currency, toaster }
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-slate-900">Recurring Transactions</h2>
           <p className="text-sm text-slate-500">

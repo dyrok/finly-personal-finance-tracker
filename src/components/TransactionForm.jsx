@@ -111,14 +111,14 @@ export default function TransactionForm({ onAdd, compact = false, currency = "US
         </div>
       </label>
 
-      {/* Category — grid for predictable mobile layout */}
+      {/* Category — chip row that wraps */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-500">
             Category
           </span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {categories.map((c) => {
             const active = category === c.name;
             const Icon = c.icon;

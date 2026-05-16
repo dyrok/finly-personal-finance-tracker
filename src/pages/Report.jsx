@@ -98,7 +98,7 @@ export default function Report({ transactions, budgets, currency }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-xl font-bold text-slate-900">Monthly Report</h2>
           <p className="text-sm text-slate-500">Detailed breakdown for the selected month</p>
@@ -132,7 +132,7 @@ export default function Report({ transactions, budgets, currency }) {
             <Metric label="Income" value={formatMoney(data.income, currency)} tone="emerald" />
             <Metric label="Expenses" value={formatMoney(data.expense, currency)} tone="rose" />
             <Metric
-              label="Net Wallet"
+              label="Net Balance"
               value={formatMoney(balance, currency)}
               tone={balance >= 0 ? "brand" : "amber"}
             />

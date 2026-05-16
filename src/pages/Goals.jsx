@@ -4,7 +4,7 @@ import EmptyState from "../components/EmptyState";
 import { formatMoney, prettyDate } from "../lib/format";
 import { uid } from "../lib/storage";
 
-export default function Goals({ goals, setGoals, currency, toaster, onAddTransaction }) {
+export default function Goals({ goals, setGoals, currency, toaster }) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
 
@@ -20,19 +20,10 @@ export default function Goals({ goals, setGoals, currency, toaster, onAddTransac
     toaster.show("Goal deleted", "info");
   }
 
-  function adjustSaved(id, delta, goalName) {
+  function adjustSaved(id, delta) {
     setGoals((prev) =>
       prev.map((g) => (g.id === id ? { ...g, saved: Math.max(0, Number(g.saved) + delta) } : g)),
     );
-    if (delta > 0 && onAddTransaction) {
-      onAddTransaction({
-        type: "expense",
-        amount: delta,
-        category: "Savings",
-        note: `Goal: ${goalName}`,
-        date: new Date().toISOString().slice(0, 10),
-      });
-    }
   }
 
   function updateGoal(id, patch) {
@@ -43,7 +34,7 @@ export default function Goals({ goals, setGoals, currency, toaster, onAddTransac
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-slate-900">Savings Goals</h2>
           <p className="text-sm text-slate-500">Track progress toward what matters</p>
@@ -139,9 +130,9 @@ export default function Goals({ goals, setGoals, currency, toaster, onAddTransac
                     )}
 
                     <div className="flex items-center gap-2 mt-4">
-                      <ContributeButton onContribute={(amt) => adjustSaved(g.id, amt, g.name)} />
+                      <ContributeButton onContribute={(amt) => adjustSaved(g.id, amt)} />
                       <button
-                        onClick={() => adjustSaved(g.id, -10, g.name)}
+                        onClick={() => adjustSaved(g.id, -10)}
                         className="btn-ghost p-2"
                         title="-10"
                       >
