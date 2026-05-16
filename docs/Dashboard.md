@@ -17,7 +17,7 @@ From top to bottom:
 1. **A heading** — "Overview" and today's date
 2. **Four KPI cards** — Income, Expenses, Net Balance, Savings Rate. Each has a tiny chart (sparkline) on the right
 3. **Budget alerts** — only appears if the user is close to or over a budget limit
-4. **Cash Flow chart** — a line chart for the last 1 / 3 / 6 / 12 months (you can toggle the range)
+4. **Cash Flow chart** — a line chart with a range toggle (1M / 3M / 6M / 12M). The chart **changes its time bucket size** with the range — 1M is daily, 3M and 6M are weekly, 12M is monthly. So zooming out doesn't just stretch the same data, it actually re-aggregates it.
 5. **Quick Add form** — the same form as the Transactions tab, but small. Lets you log a transaction without leaving the dashboard
 6. **Top Categories** — a donut chart of what you spent on this month
 7. **Recent Activity** — the last 5 transactions
@@ -99,39 +99,67 @@ The `ym()` helper turns a date like `2026-05-11` into `2026-05` so we can group 
 
 ## The Cash Flow chart
 
-This is the big chart in the middle. It shows two lines — green for income, rose for expense — for the selected range.
+This is the big chart in the middle. It shows two lines — green for income, rose for expense — and **changes granularity** based on the time range you pick. Each range uses the bucket size that makes the chart readable for that span:
+
+| Range | Granularity | Bucket count |
+|---|---|---|
+| 1M | **Daily** | 30 |
+| 3M | Weekly | 13 |
+| 6M | Weekly | 26 |
+| 12M | Monthly | 12 |
+
+So on 1M, every point is one calendar day; on 12M, every point is one month. This is why a single spike in May looks like a tall bar in 1M but blends into a wider trend in 12M — same data, different lens.
 
 ### The range selector
 
-There's a small pill at the top right of the chart: `1M / 3M / 6M / 12M`. Tapping a pill changes the range, and the chart redraws.
+A pill at the top right of the chart: `1M / 3M / 6M / 12M`. Tapping a pill updates state, which makes React rebuild the chart with the new granularity:
 
 ```jsx
 const [range, setRange] = useState(defaultRange);
 ```
 
-`useState` is React's way of remembering a value across re-renders. `range` starts at `defaultRange` (which is picked based on how much data exists — 6M if there are 6+ months of data, otherwise 3M or 1M). When the user clicks a pill, we call `setRange("3M")` and React redraws the chart with the new value.
+`defaultRange` is picked when the page first loads, based on how much data exists. With 12+ months of data, it defaults to `12M`. With 6+, `6M`. With 2+, `3M`. Otherwise `1M`. So new users see a short-range view that doesn't look empty.
 
 ### Building the chart data
 
-We rebuild the chart data whenever the range changes:
+The `buildTrend` helper at the bottom of `Dashboard.jsx` is a pure function — it takes the transactions list plus a `{ granularity, count }` option and returns an array of buckets.
 
 ```jsx
 const trendForChart = useMemo(() => {
-  const months = RANGE_OPTIONS.find((r) => r.key === range)?.months || 6;
-  return buildTrend(months);
+  const opt = RANGE_OPTIONS.find((r) => r.key === range) || RANGE_OPTIONS[2];
+  return buildTrend(transactions, opt);
 }, [transactions, range]);
 ```
 
-`buildTrend` walks backwards from today, builds an empty bucket for each month, then drops every transaction into its month bucket. The result is an array like:
+For **daily** granularity, it walks back N days from today, builds one empty bucket per day, then drops each transaction into the bucket where its date matches:
 
 ```js
 [
-  { month: "2025-12", income: 0,     expense: 0,   label: "Dec" },
-  { month: "2026-01", income: 0,     expense: 0,   label: "Jan" },
+  { key: "2026-04-17", income: 0,     expense: 0,   label: "Apr 17" },
+  { key: "2026-04-18", income: 0,     expense: 0,   label: "Apr 18" },
   // ...
-  { month: "2026-05", income: 10000, expense: 464, label: "May" },
+  { key: "2026-05-11", income: 10000, expense: 299, label: "May 11" },
+  // ...
 ]
 ```
+
+For **weekly**, it anchors on Monday of the current week, walks back N weeks, and each bucket covers Monday-to-Sunday. Each transaction lands in the week whose `startISO ≤ date ≤ endISO`.
+
+For **monthly**, it builds one bucket per calendar month and uses `transaction.date.slice(0, 7)` to match (turning `"2026-05-11"` into `"2026-05"`).
+
+Recharts takes the resulting array and draws two lines from it.
+
+### Smart axis labels
+
+With 30 daily buckets, showing every label on the X-axis would be cramped — they'd overlap. We compute an interval that keeps roughly 8 labels visible regardless of bucket count:
+
+```jsx
+const xAxisInterval = Math.max(0, Math.floor(trendForChart.length / 8));
+
+<XAxis ... interval={xAxisInterval} />
+```
+
+For 30 daily buckets → interval=3 (show every 4th day, ~8 labels). For 26 weekly → every 3rd. For 12 monthly → every other. The chart breathes.
 
 Recharts takes that array and draws two lines from it.
 
@@ -223,7 +251,7 @@ _(Fill in: which sections you built, which bugs you hunted down, anything you re
 | Heading | Page title + today's date | Top of `Dashboard.jsx` |
 | KPI cards | 4 cards with number + sparkline + delta vs last month | `<KpiCard />` × 4 |
 | Budget alerts | Pills for over-budget categories | Reads `alerts` prop from App.jsx |
-| Cash Flow chart | Line chart, 1M/3M/6M/12M toggle | `<LineChart />` + `<RangeSelector />` |
+| Cash Flow chart | Line chart with adaptive granularity (1M=daily, 3M/6M=weekly, 12M=monthly) | `<LineChart />` + `<RangeSelector />` + `buildTrend()` |
 | Quick Add | Form embedded from Transactions feature | `<TransactionForm compact />` |
 | Top Categories | Donut + list of biggest categories | `<PieChart />` |
 | Recent Activity | Last 5 transactions, read-only | `transactions.slice(0, 5).map(...)` |

@@ -30,10 +30,10 @@ import { formatMoney, ym, prettyDate } from "../lib/format";
 import { categoryMeta } from "../lib/categories";
 
 const RANGE_OPTIONS = [
-  { key: "1M", months: 2 },
-  { key: "3M", months: 3 },
-  { key: "6M", months: 6 },
-  { key: "12M", months: 12 },
+  { key: "1M", granularity: "day", count: 30 },
+  { key: "3M", granularity: "week", count: 13 },
+  { key: "6M", granularity: "week", count: 26 },
+  { key: "12M", granularity: "month", count: 12 },
 ];
 
 export default function Dashboard({
@@ -58,8 +58,9 @@ export default function Dashboard({
   }, [transactions]);
 
   const defaultRange = useMemo(() => {
+    if (monthsWithData >= 12) return "12M";
     if (monthsWithData >= 6) return "6M";
-    if (monthsWithData >= 3) return "3M";
+    if (monthsWithData >= 2) return "3M";
     return "1M";
   }, [monthsWithData]);
 
@@ -94,34 +95,16 @@ export default function Dashboard({
     return { income, expense, balance: income - expense };
   }, [transactions, lastMonth]);
 
-  const buildTrend = (months) => {
-    const out = [];
-    const now = new Date();
-    for (let i = months - 1; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      out.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
-    }
-    const map = Object.fromEntries(out.map((m) => [m, { month: m, income: 0, expense: 0 }]));
-    for (const t of transactions) {
-      const m = ym(t.date);
-      if (map[m]) {
-        if (t.type === "income") map[m].income += Number(t.amount);
-        else map[m].expense += Number(t.amount);
-      }
-    }
-    return Object.values(map).map((d) => ({
-      ...d,
-      label: new Date(d.month + "-01").toLocaleDateString(undefined, { month: "short" }),
-      net: d.income - d.expense,
-    }));
-  };
-
   const trendForChart = useMemo(() => {
-    const months = RANGE_OPTIONS.find((r) => r.key === range)?.months || 6;
-    return buildTrend(months);
+    const opt = RANGE_OPTIONS.find((r) => r.key === range) || RANGE_OPTIONS[2];
+    return buildTrend(transactions, opt);
   }, [transactions, range]);
 
-  const trendForSpark = useMemo(() => buildTrend(6), [transactions]);
+  // Sparklines always use 6 monthly buckets for a consistent shape
+  const trendForSpark = useMemo(
+    () => buildTrend(transactions, { granularity: "month", count: 6 }),
+    [transactions],
+  );
 
   const recent = transactions.slice(0, 5);
   const balance = monthData.income - monthData.expense;
@@ -129,7 +112,9 @@ export default function Dashboard({
   const lastSavingsRate =
     lastMonthData.income > 0 ? (lastMonthData.balance / lastMonthData.income) * 100 : 0;
   const hasTrendData = trendForChart.some((m) => m.income > 0 || m.expense > 0);
-  const sparseData = monthsWithData < 2;
+  const bucketsWithData = trendForChart.filter((b) => b.income > 0 || b.expense > 0).length;
+  const sparseData = bucketsWithData < 2;
+  const xAxisInterval = Math.max(0, Math.floor(trendForChart.length / 8));
 
   return (
     <div className="space-y-5">
@@ -262,6 +247,7 @@ export default function Dashboard({
                     tickLine={false}
                     axisLine={false}
                     tick={{ fill: "#94a3b8", fontSize: 11 }}
+                    interval={xAxisInterval}
                     dy={6}
                   />
                   <YAxis
@@ -704,4 +690,87 @@ function compactNumber(v) {
   if (abs >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
   if (abs >= 1_000) return `${(v / 1_000).toFixed(1)}k`;
   return v.toString();
+}
+
+function isoDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+}
+
+function buildTrend(transactions, opt) {
+  const now = new Date();
+  const buckets = [];
+
+  if (opt.granularity === "day") {
+    for (let i = opt.count - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() - i);
+      buckets.push({
+        key: isoDate(d),
+        income: 0,
+        expense: 0,
+        label: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+      });
+    }
+    const byKey = Object.fromEntries(buckets.map((b) => [b.key, b]));
+    for (const t of transactions) {
+      const b = byKey[t.date];
+      if (!b) continue;
+      if (t.type === "income") b.income += Number(t.amount);
+      else b.expense += Number(t.amount);
+    }
+  } else if (opt.granularity === "week") {
+    // Anchor on the Monday of the current week, then walk backwards
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    const dow = today.getDay();
+    const toMon = dow === 0 ? -6 : 1 - dow;
+    const thisMon = new Date(today);
+    thisMon.setDate(thisMon.getDate() + toMon);
+
+    for (let i = opt.count - 1; i >= 0; i--) {
+      const start = new Date(thisMon);
+      start.setDate(start.getDate() - i * 7);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      buckets.push({
+        key: isoDate(start),
+        startISO: isoDate(start),
+        endISO: isoDate(end),
+        income: 0,
+        expense: 0,
+        label: start.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+      });
+    }
+    for (const t of transactions) {
+      const b = buckets.find((bk) => t.date >= bk.startISO && t.date <= bk.endISO);
+      if (!b) continue;
+      if (t.type === "income") b.income += Number(t.amount);
+      else b.expense += Number(t.amount);
+    }
+  } else {
+    // Monthly
+    for (let i = opt.count - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      buckets.push({
+        key,
+        income: 0,
+        expense: 0,
+        label: d.toLocaleDateString(undefined, { month: "short" }),
+      });
+    }
+    const byMonth = Object.fromEntries(buckets.map((b) => [b.key, b]));
+    for (const t of transactions) {
+      const m = t.date.slice(0, 7);
+      const b = byMonth[m];
+      if (!b) continue;
+      if (t.type === "income") b.income += Number(t.amount);
+      else b.expense += Number(t.amount);
+    }
+  }
+
+  return buckets.map((b) => ({ ...b, net: b.income - b.expense }));
 }
