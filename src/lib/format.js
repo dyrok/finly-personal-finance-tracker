@@ -11,6 +11,19 @@ export function formatMoney(n, currency = "USD") {
   }
 }
 
+export function getCurrencySymbol(currency = "USD") {
+  try {
+    const parts = new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+    }).formatToParts(0);
+    const currencyPart = parts.find((p) => p.type === "currency");
+    return currencyPart?.value || "$";
+  } catch {
+    return "$";
+  }
+}
+
 export function ym(date) {
   const d = new Date(date);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;

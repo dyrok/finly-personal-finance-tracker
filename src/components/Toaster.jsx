@@ -21,24 +21,24 @@ export function useToaster() {
 
 const STYLES = {
   success: {
-    cls: "bg-emerald-50 border-emerald-200 text-emerald-900",
+    cls: "bg-emerald-50/95 dark:bg-emerald-900/30 border-emerald-200/50 dark:border-emerald-700/30 text-emerald-900 dark:text-emerald-200",
     icon: CheckCircle2,
-    iconCls: "text-emerald-600",
+    iconCls: "text-emerald-500",
   },
   info: {
-    cls: "bg-blue-50 border-blue-200 text-blue-900",
+    cls: "bg-sky-50/95 dark:bg-sky-900/30 border-sky-200/50 dark:border-sky-700/30 text-sky-900 dark:text-sky-200",
     icon: Info,
-    iconCls: "text-blue-600",
+    iconCls: "text-sky-500",
   },
   warn: {
-    cls: "bg-amber-50 border-amber-200 text-amber-900",
+    cls: "bg-amber-50/95 dark:bg-amber-900/30 border-amber-200/50 dark:border-amber-700/30 text-amber-900 dark:text-amber-200",
     icon: AlertTriangle,
-    iconCls: "text-amber-600",
+    iconCls: "text-amber-500",
   },
   error: {
-    cls: "bg-rose-50 border-rose-200 text-rose-900",
+    cls: "bg-rose-50/95 dark:bg-rose-900/30 border-rose-200/50 dark:border-rose-700/30 text-rose-900 dark:text-rose-200",
     icon: AlertOctagon,
-    iconCls: "text-rose-600",
+    iconCls: "text-rose-500",
   },
 };
 
@@ -51,25 +51,19 @@ export default function Toaster({ items, onDismiss }) {
         return (
           <div
             key={it.id}
-            className={`flex items-start gap-3 px-4 py-3 rounded-xl border shadow-lg backdrop-blur ${s.cls} animate-[slideIn_200ms_ease-out]`}
+            className={`flex items-start gap-3 px-4 py-3 rounded-xl border shadow-lg backdrop-blur-md ${s.cls} animate-slide-in`}
           >
             <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${s.iconCls}`} />
-            <div className="flex-1 text-sm font-medium">{it.message}</div>
+            <div className="flex-1 text-sm font-medium leading-snug">{it.message}</div>
             <button
               onClick={() => onDismiss(it.id)}
-              className="text-slate-500 hover:text-slate-900 transition"
+              className="text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         );
       })}
-      <style>{`
-        @keyframes slideIn {
-          from { transform: translateY(8px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 }

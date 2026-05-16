@@ -1,23 +1,24 @@
 import { formatMoney } from "../lib/format";
 
+const TONES = {
+  brand: "from-brand-600 via-brand-700 to-brand-900 dark:from-brand-700 dark:via-brand-800 dark:to-brand-950",
+  success: "from-emerald-600 via-emerald-700 to-emerald-900 dark:from-emerald-700 dark:via-emerald-800 dark:to-emerald-950",
+  danger: "from-rose-600 via-rose-700 to-rose-900 dark:from-rose-700 dark:via-rose-800 dark:to-rose-950",
+  warn: "from-amber-500 via-amber-600 to-amber-800 dark:from-amber-600 dark:via-amber-700 dark:to-amber-900",
+  slate: "from-slate-500 via-slate-600 to-slate-800 dark:from-gray-600 dark:via-gray-700 dark:to-gray-900",
+};
+
 export default function StatCard({ label, value, icon: Icon, tone = "brand", sub, currency }) {
-  const tones = {
-    brand: "from-brand-500 to-brand-700 text-white",
-    success: "from-emerald-500 to-emerald-700 text-white",
-    danger: "from-rose-500 to-rose-700 text-white",
-    warn: "from-amber-500 to-amber-600 text-white",
-    slate: "from-slate-700 to-slate-900 text-white",
-  };
   return (
     <div
-      className={`rounded-2xl bg-gradient-to-br ${tones[tone]} p-5 shadow-sm relative overflow-hidden`}
+      className={`rounded-[20px] bg-gradient-to-br ${TONES[tone] || TONES.brand} text-white p-5 shadow-lg relative overflow-hidden`}
     >
-      <div className="absolute -right-4 -top-4 opacity-15">
-        {Icon ? <Icon className="w-24 h-24" /> : null}
+      <div className="absolute -right-6 -top-6 opacity-[0.07]">
+        {Icon ? <Icon className="w-28 h-28" /> : null}
       </div>
       <div className="relative">
-        <div className="text-xs font-semibold uppercase tracking-wider opacity-90">{label}</div>
-        <div className="text-2xl sm:text-3xl font-bold mt-1">
+        <div className="text-xs font-medium uppercase tracking-wider opacity-80">{label}</div>
+        <div className="text-2xl sm:text-3xl font-bold mt-1.5 tabular-nums tracking-tight">
           {typeof value === "number" ? formatMoney(value, currency) : value}
         </div>
         {sub ? <div className="text-xs opacity-80 mt-1">{sub}</div> : null}

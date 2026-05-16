@@ -7,6 +7,8 @@ import {
   FileBarChart,
   Wallet,
   Settings as SettingsIcon,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useLocalStorage, uid } from "./lib/storage";
 import { materializeRecurring } from "./lib/recurring";
@@ -46,6 +48,15 @@ export default function App() {
     currency: "USD",
     alertThreshold: 0.8,
   });
+  const [darkMode, setDarkMode] = useLocalStorage("ft.darkMode", false);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
 
   const toaster = useToaster();
 
@@ -142,22 +153,33 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-sm">
+      <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/80 sticky top-0 z-30" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-3.5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-md shadow-brand-500/20">
               <Wallet className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-lg leading-tight text-slate-900">Finly</h1>
-              <p className="text-[11px] text-slate-500 leading-tight">Personal Finance Tracker</p>
+              <h1 className="font-bold text-lg leading-tight text-slate-900 dark:text-white tracking-tight">Finly</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight">Personal Finance Tracker</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {darkMode ? (
+                <Sun className="w-5 h-5 text-amber-500" />
+              ) : (
+                <Moon className="w-5 h-5 text-slate-400" />
+              )}
+            </button>
             <div className="text-right">
-              <div className="text-xs text-slate-500">Wallet</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Wallet</div>
               <div
-                className={`font-bold text-sm ${totals.balance >= 0 ? "text-emerald-600" : "text-rose-600"}`}
+                className={`font-bold text-sm tabular-nums ${totals.balance >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}
               >
                 {new Intl.NumberFormat(undefined, {
                   style: "currency",
@@ -169,8 +191,8 @@ export default function App() {
           </div>
         </div>
 
-        <nav className="max-w-7xl mx-auto px-2 sm:px-4 overflow-x-auto">
-          <div className="flex gap-0.5 pb-1 min-w-max">
+        <nav className="max-w-7xl mx-auto px-3 sm:px-6 overflow-x-auto">
+          <div className="flex gap-1 pb-2 min-w-max">
             {TABS.map((t) => {
               const Icon = t.icon;
               const active = tab === t.id;
@@ -178,14 +200,17 @@ export default function App() {
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
-                  className={`flex items-center gap-1.5 px-2.5 py-2.5 text-xs sm:text-sm font-medium rounded-t-lg whitespace-nowrap transition border-b-2 ${
+                  className={`relative flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-medium rounded-xl whitespace-nowrap transition-all duration-200 ${
                     active
-                      ? "text-brand-700 border-brand-600 bg-brand-50/60"
-                      : "text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100"
+                      ? "bg-brand-50 dark:bg-slate-800 text-brand-700 dark:text-brand-300 shadow-sm"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t.label}</span>
+                  {active && (
+                    <span className="absolute inset-0 rounded-xl bg-brand-500/5 dark:bg-brand-400/5 blur-sm" />
+                  )}
+                  <Icon className="w-4 h-4 relative" />
+                  <span className="hidden sm:inline relative">{t.label}</span>
                 </button>
               );
             })}
@@ -193,7 +218,7 @@ export default function App() {
         </nav>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-5 sm:px-8 py-6">
         {tab === "dashboard" && (
           <Dashboard
             transactions={transactions}
@@ -246,7 +271,7 @@ export default function App() {
         )}
       </main>
 
-      <footer className="text-center text-xs text-slate-400 py-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <footer className="text-center text-xs text-slate-400 dark:text-slate-500 py-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         Finly • Data saved locally in your browser
       </footer>
 
