@@ -175,3 +175,4 @@ A comprehensive React Q&A guide covering all hooks, component patterns, and Java
 ## License
 
 MIT — free to use, modify, and distribute.
+Apache 2.0 Licence, free to use.
