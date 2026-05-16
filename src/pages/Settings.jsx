@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Trash2, Save, Upload, Download } from "lucide-react";
+import { Trash2, Save, Upload, Download, Sparkles } from "lucide-react";
 import { EXPENSE_CATEGORIES, categoryMeta } from "../lib/categories";
 import { formatMoney } from "../lib/format";
+import { generateDummyData } from "../lib/dummy";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "INR", "JPY", "CAD", "AUD", "CHF", "CNY", "BRL"];
 
@@ -56,6 +57,22 @@ export default function SettingsPanel({
     a.click();
     URL.revokeObjectURL(url);
     toaster.show("Backup downloaded", "success");
+  }
+
+  function populateDummy() {
+    if (
+      !confirm(
+        "Replace ALL current data with sample data?\n\nThis is great for demoing the app but will overwrite anything you have. You can Export Backup first if you want to keep your current data.",
+      )
+    )
+      return;
+    const data = generateDummyData();
+    localStorage.setItem("ft.transactions", JSON.stringify(data.transactions));
+    localStorage.setItem("ft.goals", JSON.stringify(data.goals));
+    localStorage.setItem("ft.recurring", JSON.stringify(data.recurring));
+    localStorage.setItem("ft.budgets", JSON.stringify(data.budgets));
+    toaster.show("Sample data loaded — reloading", "success");
+    setTimeout(() => location.reload(), 800);
   }
 
   function importAll(e) {
@@ -221,6 +238,14 @@ export default function SettingsPanel({
             Import Backup
             <input type="file" accept="application/json" onChange={importAll} className="hidden" />
           </label>
+          <button
+            onClick={populateDummy}
+            className="btn-ghost border border-brand-200 text-brand-700 hover:bg-brand-50"
+            title="Replace current data with sample data for demos"
+          >
+            <Sparkles className="w-4 h-4" />
+            Load Sample Data
+          </button>
           <button onClick={onReset} className="btn-danger ml-auto">
             <Trash2 className="w-4 h-4" />
             Reset All Data

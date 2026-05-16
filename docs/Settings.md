@@ -1,7 +1,9 @@
 # Settings
 
 **Owner:** Manthan
-**File:** `src/pages/Settings.jsx`
+**Files:**
+- `src/pages/Settings.jsx` — the page itself
+- `src/lib/dummy.js` — the sample data generator used by the "Load Sample Data" button
 
 This page is where the user configures the app:
 
@@ -9,6 +11,7 @@ This page is where the user configures the app:
 - Choose when budget alerts should fire
 - Set monthly spending limits for each category
 - Back up or restore all their data
+- Load a realistic sample dataset (useful for demos and first-run)
 - Wipe everything and start over
 
 Settings doesn't affect transactions or goals directly — it changes how the rest of the app interprets the data.
@@ -178,9 +181,49 @@ Below the list, we sum all the draft budgets:
 
 ---
 
-## Section 3: Data (Backup, Restore, Reset)
+## Section 3: Data (Backup, Restore, Sample, Reset)
 
 This is the danger zone. The user can:
+
+### Load Sample Data
+
+A "Load Sample Data" button (sparkles icon) generates a realistic dataset and replaces whatever's currently in localStorage. Useful for demoing the app, screenshots, or showing the dashboard to someone without spending an hour logging fake transactions by hand.
+
+```jsx
+function populateDummy() {
+  if (
+    !confirm(
+      "Replace ALL current data with sample data?\n\nThis is great for demoing the app but will overwrite anything you have. You can Export Backup first if you want to keep your current data.",
+    )
+  )
+    return;
+  const data = generateDummyData();
+  localStorage.setItem("ft.transactions", JSON.stringify(data.transactions));
+  localStorage.setItem("ft.goals", JSON.stringify(data.goals));
+  localStorage.setItem("ft.recurring", JSON.stringify(data.recurring));
+  localStorage.setItem("ft.budgets", JSON.stringify(data.budgets));
+  toaster.show("Sample data loaded — reloading", "success");
+  setTimeout(() => location.reload(), 800);
+}
+```
+
+The actual data generator lives in `src/lib/dummy.js`. It builds:
+
+| What | How much |
+|---|---|
+| Transactions | ~30–40 expenses + 6 salary income entries spread across the last 6 months |
+| Goals | 3 sample goals (Emergency Fund partial, Trip partial w/ deadline, Laptop complete) |
+| Recurring rules | Salary monthly + Netflix monthly + Rent monthly |
+| Budgets | A sensible 7-category default |
+
+The numbers and dates are randomized inside fixed ranges each time you click, so two presses produce different-looking data (good for testing edge cases). Recurring `nextDate` is set to **next month** so the materialize engine doesn't immediately fire and re-create transactions on top of the seeded ones.
+
+The flow is the same as Import / Reset:
+1. Confirm the destructive action
+2. Write each section to localStorage
+3. Toast + reload — the app boots fresh and `useLocalStorage` picks up the new values
+
+The "Settings" preferences are intentionally **not** touched (so your currency and threshold survive a sample-load).
 
 ### Export Backup
 
@@ -284,7 +327,7 @@ Browser `confirm` dialog. If yes, wipe all five keys and reload. After reload, t
 | Budget value | When "Save Changes" is clicked |
 | Threshold slider | When "Save Changes" is clicked |
 | Add / remove category | Stays in draft until Save |
-| Export / Import / Reset | Acts on localStorage directly, immediately |
+| Export / Import / Reset / Load Sample | Acts on localStorage directly, immediately |
 
 Budgets and threshold are batched because they often go together — the user might tweak the threshold AND a few budgets at once. Forcing them to save individually would be annoying.
 
@@ -327,4 +370,5 @@ _(Fill in: which sections (preferences, budgets, data backup/import), or specifi
 | Remove budget | trash icon | Removes from draft, save commits |
 | Export backup | `exportAll()` | Builds JSON of all 5 localStorage keys, downloads as file |
 | Import backup | `importAll()` | Reads JSON file, writes each section to localStorage, reloads page |
+| Load Sample Data | `populateDummy()` + `lib/dummy.js` | Confirms, generates 6 months of randomized transactions + 3 goals + 3 recurring rules, writes to localStorage, reloads |
 | Reset all data | `onReset` → App.jsx | Confirm dialog, wipe all 5 keys, reload. Falls back to defaults |
